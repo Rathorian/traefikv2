@@ -1,0 +1,37 @@
+global:
+  sendAnonymousUsage: false
+  checkNewVersion: false
+
+api:
+  dashboard: true
+
+log:
+  filePath: /etc/traefik/traefik-info.log
+  level: INFO
+
+providers:
+  docker:
+    endpoint: unix:///var/run/docker.sock
+    exposedByDefault: false
+    watch: true
+
+  file:
+    directory: /etc/traefik/conf.d
+    watch: true
+
+entryPoints:
+  http:
+    address: ":80"
+  https:
+    address: ":443"
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: contact@domain.tld
+      #caServer: https://acme-staging-v02.api.letsencrypt.org/directory
+      caServer: https://acme-v02.api.letsencrypt.org/directory
+      storage: acme.json
+      keyType: EC256
+      dnsChallenge:
+        provider: gandiv5

@@ -1,0 +1,38 @@
+version: "3.8"
+
+networks:
+  frontend:
+    external: true
+
+services:
+  traefik:
+    image: "traefik:picodon"
+    container_name: "traefik"
+    restart: "unless-stopped"
+    environment:
+      - "GANDIV5_API_KEY=XXXXXXXXXXXXXXXXXXX"
+    ports:
+      - "80:80"
+      - "443:443"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=http"
+      - "traefik.http.routers.traefik.rule=Host(`dashboard.domain.tld`)"
+      - "traefik.http.routers.traefik.middlewares=redirect-https@file"
+      - "traefik.http.routers.traefik-secure.entrypoints=https"
+      - "traefik.http.routers.traefik-secure.rule=Host(`dashboard.domain.tld`)"
+      - "traefik.http.routers.traefik-secure.middlewares=security@file,compression@file,hsts@file,traefik-users@file"
+      - "traefik.http.routers.traefik-secure.tls=true"
+      - "traefik.http.routers.traefik-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].main=domain.tld"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.domain.tld"
+      - "traefik.http.routers.traefik-secure.tls.options=mintls13@file"
+      - "traefik.http.routers.traefik-secure.service=api@internal"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "${HOME_DIR}/traefik/traefik.yml:/etc/traefik/traefik.yml:ro"
+      - "${HOME_DIR}/traefik/conf.d:/etc/traefik/conf.d:ro"
+      - "${HOME_DIR}/traefik/logs/traefik-info.log:/etc/traefik/traefik-info.log"
+      - "${HOME_DIR}/traefik/acme.json:/acme.json"
+    networks:
+      - frontend
